@@ -1,6 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import { AuthProvider } from "./context/AuthContext";
 import { ToastContainer } from "react-toastify";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -19,19 +20,27 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
-  
-  
+  const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+
+  if (!googleClientId) {
+    console.warn("NEXT_PUBLIC_GOOGLE_CLIENT_ID is not defined");
+  }
+
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthProvider>
-        {children}
-        <ToastContainer
-          theme="colored"
-          autoClose = {2000}
-        />
+          <GoogleOAuthProvider clientId={googleClientId}>
+            {children}
+          </GoogleOAuthProvider>
+
+          <ToastContainer
+            theme="colored"
+            autoClose={2000}
+            position="top-right"
+          />
         </AuthProvider>
       </body>
     </html>

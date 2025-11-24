@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState,useLayoutEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useAuth } from "../context/AuthContext";
@@ -20,10 +20,16 @@ const Signup = () => {
     const [loading, setLoading] = useState(false);
     const [resentLoad, setResetLoad] = useState(false);
 
-    const { setAuthUser } = useAuth();
+    const { setAuthUser, authUser, loadingAuth } = useAuth();
     const router = useRouter();
 
     const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+    useLayoutEffect(() => {
+        if (!loadingAuth && authUser) {
+            router.replace("/");
+        }
+    }, [authUser, loadingAuth, router]);
 
     useEffect(() => {
         let interval;
@@ -42,11 +48,11 @@ const Signup = () => {
 
 
     const submitSignup = async () => {
-        if (!fullName.trim()) return toast.error("Please enter your full name",{toastId : "error_enter_full_name"});
-        if (!email.trim()) return toast.error("Please enter your email",{toastId : "error_enter_email"});
-        if (!validateEmail(email)) return toast.error("Please enter a valid email",{toastId : "error_valid_email"});
-        if (!password) return toast.error("Please enter a password",{toastId : "error_enter_password"});
-        if (password.length < 6) return toast.error("Password must be at least 6 characters",{toastId : "error_length_password"});
+        if (!fullName.trim()) return toast.error("Please enter your full name", { toastId: "error_enter_full_name" });
+        if (!email.trim()) return toast.error("Please enter your email", { toastId: "error_enter_email" });
+        if (!validateEmail(email)) return toast.error("Please enter a valid email", { toastId: "error_valid_email" });
+        if (!password) return toast.error("Please enter a password", { toastId: "error_enter_password" });
+        if (password.length < 6) return toast.error("Password must be at least 6 characters", { toastId: "error_length_password" });
 
         setLoading(true);
         try {
@@ -56,20 +62,20 @@ const Signup = () => {
                 { withCredentials: true }
             );
 
-            toast.info("OTP sent to your email!",{toastId : "info_otp_sent"});
+            toast.info("OTP sent to your email!", { toastId: "info_otp_sent" });
 
             setUserId(res.data.temporaryUserId);
             setStep("verifyOtp");
             startTimer();
         } catch (err) {
-            toast.error(err.response?.data?.message || "Signup failed",{toastId : "error_signup_failed"});
+            toast.error(err.response?.data?.message || "Signup failed", { toastId: "error_signup_failed" });
         } finally {
             setLoading(false);
         }
     };
 
     const verifyOtpHandler = async () => {
-        if (otp.length < 4) return toast.error("Enter valid OTP" , {toastId : "error_enter_valid_otp"});
+        if (otp.length < 4) return toast.error("Enter valid OTP", { toastId: "error_enter_valid_otp" });
 
         setLoading(true);
         try {
@@ -80,11 +86,11 @@ const Signup = () => {
             );
 
             setAuthUser(res.data.user);
-            toast.success("Account verified successfully!",{toastId : "account_verified"});
+            toast.success("Account verified successfully!", { toastId: "account_verified" });
 
             router.push("/");
         } catch (err) {
-            toast.error(err.response?.data?.message || "Invalid OTP",{toastId : "error_invalid_otp"});
+            toast.error(err.response?.data?.message || "Invalid OTP", { toastId: "error_invalid_otp" });
         } finally {
             setLoading(false);
         }
@@ -100,12 +106,12 @@ const Signup = () => {
                 { withCredentials: true }
             );
 
-            toast.info("OTP resent to your email",{toastId : "info_otp_send"});
+            toast.info("OTP resent to your email", { toastId: "info_otp_send" });
 
             setOtp("");
             startTimer();
         } catch (err) {
-            toast.error("Could not resend OTP",{toastId : "error_failed_resend_otp"});
+            toast.error("Could not resend OTP", { toastId: "error_failed_resend_otp" });
         } finally {
             setResetLoad(false);
         }
